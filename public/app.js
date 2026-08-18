@@ -50,7 +50,7 @@ function renderAuth() {
 
 function renderJoinLink(joinToken) {
   state.joinLink = joinToken;
-  appRoot.innerHTML = `<main class="auth-page"><section class="auth-card"><div class="eyebrow">邀请加入</div><h1>加入家庭</h1><p class="subtle">通过家庭分享的链接加入。</p>${state.error ? `<div class="notice">${escapeHtml(state.error)}</div>` : ''}<form class="form" id="join-link-form"><label>你的名字<input name="nickname" required placeholder="小明"></label><button class="button primary" type="submit">加入家庭</button></form><p class="subtle auth-hint">用同一个名字加入会自动归到同一身份，换设备不丢数据。</p></section></main>`;
+  appRoot.innerHTML = `<main class="auth-page"><div class="auth-brand"><strong>Eat It First</strong><span>你的家庭粮仓管家</span></div><section class="auth-card"><h1>加入家庭</h1>${state.error ? `<div class="notice">${escapeHtml(state.error)}</div>` : ''}<form class="form" id="join-link-form"><label>&nbsp;<input name="nickname" required placeholder="昵称"></label><button class="button primary" type="submit">加入家庭</button></form></section></main>`;
   document.querySelector('#join-link-form').addEventListener('submit', async (event) => {
     event.preventDefault();
     const nickname = new FormData(event.currentTarget).get('nickname');

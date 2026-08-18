@@ -92,10 +92,12 @@ label { display: grid; gap: 7px; color: var(--muted); font-size: 13px; font-weig
 .form { display: grid; gap: 17px; max-width: 690px; margin: 0 auto; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .form-actions { display: flex; justify-content: flex-end; gap: 10px; }
-.auth-page { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: #e9f0e9; }
+.auth-page { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: #e9f0e9; position: relative; }
+.auth-brand { position: absolute; top: 28px; left: 28px; }
+.auth-brand strong { display: block; font-size: 40px; letter-spacing: -1.5px; }
+.auth-brand span { color: var(--muted); font-size: 17px; margin-top: 6px; display: block; }
 .auth-card { width: min(100%, 440px); background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 34px; box-shadow: var(--shadow); }
-.auth-card h1 { font-size: 42px; }
-.auth-tabs { display: flex; border-bottom: 1px solid var(--line); margin: 25px 0; gap: 20px; }
+.auth-card h1 { font-size: 52px; letter-spacing: -2px; }.auth-tabs { display: flex; border-bottom: 1px solid var(--line); margin: 25px 0; gap: 20px; }
 .auth-tabs button { padding: 10px 0; background: none; border: 0; color: var(--muted); border-bottom: 2px solid transparent; }
 .auth-tabs button.active { color: var(--green); border-color: var(--green); font-weight: 800; }
 .notice { padding: 12px 14px; border-radius: 8px; background: #fff1c7; color: #765815; margin-bottom: 16px; font-size: 13px; }
