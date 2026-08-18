@@ -50,13 +50,7 @@ export function registerAuthRoutes(app) {
     const existing = app.db.prepare('SELECT id FROM families WHERE name = ?').get(cleanName);
 
     if (existing) {
-      const member = app.db.prepare('SELECT id, nickname FROM members WHERE family_id = ? AND nickname = ?').get(existing.id, cleanNick);
-      if (!member) {
-        return reply.code(409).send({ error: `家庭「${cleanName}」已存在，请通过邀请码加入家庭` });
-      }
-      const deviceToken = createDevice(app.db, member.id, now);
-      const family = app.db.prepare('SELECT id, name FROM families WHERE id = ?').get(existing.id);
-      return { family, member: { id: member.id, nickname: member.nickname }, inviteCode: null, deviceToken, joined: true };
+      return reply.code(409).send({ error: `家庭「${cleanName}」已存在，请通过加入链接或邀请码加入家庭` });
     }
 
     const familyId = randomUUID();
