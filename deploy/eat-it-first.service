@@ -1,0 +1,24 @@
+[Unit]
+Description=Eat It First household food tracker
+After=network.target
+
+[Service]
+Type=simple
+User=eat-it-first
+Group=eat-it-first
+WorkingDirectory=/opt/eat-it-first
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=3001
+Environment=DATABASE_FILE=/var/lib/eat-it-first/eat-it-first.db
+Environment=UPLOAD_DIR=/var/lib/eat-it-first/uploads
+ExecStart=/usr/bin/node /opt/eat-it-first/src/server.js
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/var/lib/eat-it-first /var/log/eat-it-first /var/lib/eat-it-first/uploads
+
+[Install]
+WantedBy=multi-user.target
