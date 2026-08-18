@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { randomBytes } from 'node:crypto';
 import Database from 'better-sqlite3';
 
 const schemaFile = new URL('./schema.sql', import.meta.url);
@@ -20,6 +21,10 @@ function migrate(db) {
 
   const familyCols = db.prepare('PRAGMA table_info(families)').all().map((col) => col.name);
   if (!familyCols.includes('join_token')) db.exec("ALTER TABLE families ADD COLUMN join_token TEXT NOT NULL DEFAULT ''");
+  const emptyTokenFamilies = db.prepare("SELECT id FROM families WHERE join_token = ''").all();
+  for (const family of emptyTokenFamilies) {
+    db.prepare('UPDATE families SET join_token = ? WHERE id = ?').run(randomBytes(12).toString('base64url'), family.id);
+  }
 
   db.exec(`CREATE TABLE IF NOT EXISTS devices (
     id TEXT PRIMARY KEY,
