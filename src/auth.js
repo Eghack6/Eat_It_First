@@ -9,6 +9,10 @@ export function createInviteCode() {
   return randomBytes(5).toString('hex').toUpperCase();
 }
 
+export function createJoinToken() {
+  return randomBytes(12).toString('base64url');
+}
+
 export function createDeviceToken() {
   return randomBytes(32).toString('base64url');
 }
@@ -58,10 +62,11 @@ export function registerAuthRoutes(app) {
     const familyId = randomUUID();
     const memberId = randomUUID();
     const inviteCode = createInviteCode();
+    const joinToken = createJoinToken();
     let deviceToken = null;
     const create = app.db.transaction(() => {
-      app.db.prepare('INSERT INTO families (id, name, invite_code_hash, created_at) VALUES (?, ?, ?, ?)')
-        .run(familyId, cleanName, hashSecret(inviteCode), now);
+      app.db.prepare('INSERT INTO families (id, name, invite_code_hash, join_token, created_at) VALUES (?, ?, ?, ?, ?)')
+        .run(familyId, cleanName, hashSecret(inviteCode), joinToken, now);
       app.db.prepare('INSERT INTO members (id, family_id, nickname, joined_at, last_active_at) VALUES (?, ?, ?, ?, ?)')
         .run(memberId, familyId, cleanNick, now, now);
       deviceToken = createDevice(app.db, memberId, now);
@@ -95,11 +100,34 @@ export function registerAuthRoutes(app) {
   });
 
   app.addHook('preHandler', async (request, reply) => {
-    const isPublic = request.method === 'POST' && (request.url === '/api/families' || request.url === '/api/families/join');
+    const isPublic = request.method === 'POST' && (request.url === '/api/families' || request.url === '/api/families/join' || request.url === '/api/families/join-link');
     if (!request.url.startsWith('/api/') || request.url === '/api/health' || isPublic) return;
     const member = authenticate(request, app.db);
     if (!member) return reply.code(401).send({ error: 'Authentication required' });
     request.member = member;
+  });
+
+  app.post('/api/families/join-link', async (request, reply) => {
+    const { token, nickname } = request.body || {};
+    if (!validText(token, 64) || !validText(nickname, 40)) {
+      return reply.code(400).send({ error: '链接和你的名字是必填的' });
+    }
+    const family = app.db.prepare('SELECT id, name FROM families WHERE join_token = ?').get(token.trim());
+    if (!family) return reply.code(404).send({ error: '链接无效或已失效' });
+    const cleanNick = nickname.trim();
+    const now = new Date().toISOString();
+
+    let member = app.db.prepare('SELECT id, nickname FROM members WHERE family_id = ? AND nickname = ?').get(family.id, cleanNick);
+    if (member) {
+      const deviceToken = createDevice(app.db, member.id, now);
+      return { family, member: { id: member.id, nickname: member.nickname }, deviceToken, joined: true };
+    }
+
+    const memberId = randomUUID();
+    app.db.prepare('INSERT INTO members (id, family_id, nickname, joined_at, last_active_at) VALUES (?, ?, ?, ?, ?)')
+      .run(memberId, family.id, cleanNick, now, now);
+    const deviceToken = createDevice(app.db, memberId, now);
+    return { family, member: { id: memberId, nickname: cleanNick }, deviceToken };
   });
 
   app.get('/api/families/current', async (request) => {
@@ -112,6 +140,17 @@ export function registerAuthRoutes(app) {
     const inviteCode = createInviteCode();
     app.db.prepare('UPDATE families SET invite_code_hash = ? WHERE id = ?').run(hashSecret(inviteCode), request.member.familyId);
     return { inviteCode };
+  });
+
+  app.get('/api/families/join-link', async (request) => {
+    const family = app.db.prepare('SELECT join_token FROM families WHERE id = ?').get(request.member.familyId);
+    return { joinToken: family.join_token };
+  });
+
+  app.post('/api/families/join-link/rotate', async (request) => {
+    const joinToken = createJoinToken();
+    app.db.prepare('UPDATE families SET join_token = ? WHERE id = ?').run(joinToken, request.member.familyId);
+    return { joinToken };
   });
 
   app.post('/api/families/leave', async (request) => {

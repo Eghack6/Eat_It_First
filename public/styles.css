@@ -109,6 +109,8 @@ label { display: grid; gap: 7px; color: var(--muted); font-size: 13px; font-weig
 .option-chip-actions { display: flex; gap: 8px; }
 .option-chip-actions .button { padding: 7px 11px; font-size: 13px; }
 .token-box { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #f0f6f0; border-radius: 8px; padding: 13px; font-weight: 800; letter-spacing: 1px; }
+.join-box { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #f0f6f0; border-radius: 8px; padding: 10px 13px; }
+.join-url { font-size: 12px; color: var(--green); word-break: break-all; font-weight: 700; }
 .activity { display: grid; gap: 10px; }
 .activity-item { border-top: 1px solid var(--line); padding-top: 11px; font-size: 13px; }
 .activity-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }

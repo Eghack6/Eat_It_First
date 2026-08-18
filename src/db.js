@@ -18,6 +18,9 @@ function migrate(db) {
   const foodCols = db.prepare('PRAGMA table_info(food_items)').all().map((col) => col.name);
   if (!foodCols.includes('photo')) db.exec("ALTER TABLE food_items ADD COLUMN photo TEXT NOT NULL DEFAULT ''");
 
+  const familyCols = db.prepare('PRAGMA table_info(families)').all().map((col) => col.name);
+  if (!familyCols.includes('join_token')) db.exec("ALTER TABLE families ADD COLUMN join_token TEXT NOT NULL DEFAULT ''");
+
   db.exec(`CREATE TABLE IF NOT EXISTS devices (
     id TEXT PRIMARY KEY,
     member_id TEXT NOT NULL REFERENCES members(id) ON DELETE CASCADE,
