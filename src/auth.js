@@ -59,8 +59,8 @@ export function registerAuthRoutes(app) {
     const joinToken = createJoinToken();
     let deviceToken = null;
     const create = app.db.transaction(() => {
-      app.db.prepare('INSERT INTO families (id, name, invite_code_hash, join_token, created_at) VALUES (?, ?, ?, ?, ?)')
-        .run(familyId, cleanName, hashSecret(inviteCode), joinToken, now);
+      app.db.prepare('INSERT INTO families (id, name, invite_code_hash, invite_code, join_token, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+        .run(familyId, cleanName, hashSecret(inviteCode), inviteCode, joinToken, now);
       app.db.prepare('INSERT INTO members (id, family_id, nickname, joined_at, last_active_at) VALUES (?, ?, ?, ?, ?)')
         .run(memberId, familyId, cleanNick, now, now);
       deviceToken = createDevice(app.db, memberId, now);
@@ -130,9 +130,15 @@ export function registerAuthRoutes(app) {
     return { family, members, currentMemberId: request.member.memberId };
   });
 
+  app.get('/api/families/invite-code', async (request) => {
+    const family = app.db.prepare('SELECT invite_code FROM families WHERE id = ?').get(request.member.familyId);
+    return { inviteCode: family.invite_code };
+  });
+
   app.post('/api/families/invite-code/rotate', async (request) => {
     const inviteCode = createInviteCode();
-    app.db.prepare('UPDATE families SET invite_code_hash = ? WHERE id = ?').run(hashSecret(inviteCode), request.member.familyId);
+    app.db.prepare('UPDATE families SET invite_code = ?, invite_code_hash = ? WHERE id = ?')
+      .run(inviteCode, hashSecret(inviteCode), request.member.familyId);
     return { inviteCode };
   });
 

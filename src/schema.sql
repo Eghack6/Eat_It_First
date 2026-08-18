@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS families (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   invite_code_hash TEXT NOT NULL UNIQUE,
+  invite_code TEXT NOT NULL DEFAULT '',
   join_token TEXT NOT NULL DEFAULT '',
   created_at TEXT NOT NULL
 );

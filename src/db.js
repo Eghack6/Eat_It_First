@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import Database from 'better-sqlite3';
 
 const schemaFile = new URL('./schema.sql', import.meta.url);
@@ -24,6 +24,15 @@ function migrate(db) {
   const emptyTokenFamilies = db.prepare("SELECT id FROM families WHERE join_token = ''").all();
   for (const family of emptyTokenFamilies) {
     db.prepare('UPDATE families SET join_token = ? WHERE id = ?').run(randomBytes(12).toString('base64url'), family.id);
+  }
+  if (!familyCols.includes('invite_code')) {
+    db.exec("ALTER TABLE families ADD COLUMN invite_code TEXT NOT NULL DEFAULT ''");
+    const families = db.prepare('SELECT id FROM families').all();
+    for (const family of families) {
+      const inviteCode = randomBytes(5).toString('hex').toUpperCase();
+      db.prepare('UPDATE families SET invite_code = ?, invite_code_hash = ? WHERE id = ?')
+        .run(inviteCode, createHash('sha256').update(inviteCode).digest('hex'), family.id);
+    }
   }
 
   db.exec(`CREATE TABLE IF NOT EXISTS devices (
