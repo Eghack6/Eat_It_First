@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS families (
   invite_code_hash TEXT NOT NULL UNIQUE,
   invite_code TEXT NOT NULL DEFAULT '',
   join_token TEXT NOT NULL DEFAULT '',
+  creator_member_id TEXT NOT NULL DEFAULT '',
+  creator_password_hash TEXT NOT NULL DEFAULT '',
   created_at TEXT NOT NULL
 );
 
@@ -25,6 +27,9 @@ CREATE TABLE IF NOT EXISTS devices (
   id TEXT PRIMARY KEY,
   member_id TEXT NOT NULL REFERENCES members(id) ON DELETE CASCADE,
   device_token_hash TEXT NOT NULL UNIQUE,
+  family_id TEXT NOT NULL,
+  device_code TEXT NOT NULL,
+  deleted_at TEXT,
   created_at TEXT NOT NULL
 );
 
@@ -56,6 +61,10 @@ CREATE TABLE IF NOT EXISTS food_items (
   name TEXT NOT NULL,
   category_id TEXT NOT NULL REFERENCES categories(id),
   quantity INTEGER NOT NULL CHECK(quantity >= 0),
+  quantity_unit TEXT NOT NULL DEFAULT 'portion',
+  produced_date TEXT NOT NULL DEFAULT '',
+  shelf_life INTEGER,
+  shelf_life_unit TEXT NOT NULL DEFAULT '',
   expiry_date TEXT NOT NULL,
   location_id TEXT NOT NULL REFERENCES locations(id),
   note TEXT NOT NULL DEFAULT '',
@@ -74,7 +83,9 @@ CREATE TABLE IF NOT EXISTS food_logs (
   family_id TEXT NOT NULL REFERENCES families(id) ON DELETE CASCADE,
   food_item_id TEXT NOT NULL REFERENCES food_items(id) ON DELETE CASCADE,
   member_id TEXT NOT NULL REFERENCES members(id),
+  device_id TEXT REFERENCES devices(id),
   action TEXT NOT NULL,
   quantity_delta INTEGER NOT NULL DEFAULT 0,
+  undone_at TEXT,
   created_at TEXT NOT NULL
 );
